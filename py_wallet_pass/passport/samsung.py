@@ -1,0 +1,1 @@
+"""TODO: Implement Samsung Wallet pass generation."""
