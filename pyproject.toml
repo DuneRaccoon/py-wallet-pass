@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "SDK for easily creating/managing Apple and Google wallet passes."
 authors = ["DuneRaccoon <benjamincsherro@hotmail.com>"]
 readme = "README.md"
+license = "CC BY-NC 4.0"
+packages = [{ include = "py_wallet_pass" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"

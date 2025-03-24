@@ -1,7 +1,7 @@
 # py-wallet-pass
 
 [![PyPI version](https://badge.fury.io/py/py-wallet-pass.svg)](https://badge.fury.io/py/py-wallet-pass)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-MIT-blue.svg)](https://creativecommons.org/licenses/by-nc/4.0/deed.en)
 
 A Python SDK for easily creating and managing digital wallet passes across multiple platforms:
 

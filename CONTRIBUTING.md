@@ -75,11 +75,11 @@ This project follows these code style guidelines:
 ## Documentation
 
 - We use Markdown for documentation
-- Update the README.md and documentation files as necessary
+- Update the README.md and documentation files as necessary (in ./docs)
 - Include examples for new features
 - Document any breaking changes
 
-## Releasing
+## Releasing??
 
 1. Update version in pyproject.toml
 2. Update CHANGELOG.md
