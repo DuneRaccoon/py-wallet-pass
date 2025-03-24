@@ -492,4 +492,4 @@ poetry run pytest
 
 ## 🔒 License
 
-MIT License - See [LICENSE](LICENSE) for details.
+CC BY-NC 4.0 License - See [LICENSE](LICENSE) for details.
