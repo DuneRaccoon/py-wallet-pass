@@ -1,14 +1,14 @@
 """Base classes for wallet pass management."""
 
 import abc
-import logging
 from typing import Optional
 
 from ..config import WalletConfig
 from ..schema.core import PassData, PassResponse, PassTemplate
 from ..storage import StorageBackend
+from ..logging import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class BasePass(abc.ABC):

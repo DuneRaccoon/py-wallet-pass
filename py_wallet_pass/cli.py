@@ -10,11 +10,14 @@ from typing import Dict, List, Optional, Any
 
 from . import create_pass_manager, WalletConfig
 from .schema.core import PassType, PassData, PassTemplate
+from .logging import get_logger, with_context
 from .utils import (
     create_template, add_field_to_template, create_pass_data,
     create_event_pass_template, create_coupon_pass_template,
     create_loyalty_pass_template, create_boarding_pass_template
 )
+
+logger = get_logger(__name__)
 
 
 def load_config(config_file: str) -> WalletConfig:
@@ -27,6 +30,9 @@ def load_config(config_file: str) -> WalletConfig:
 
 def create_template_cli(args: argparse.Namespace) -> None:
     """Create a new pass template."""
+    context = with_context(command="create-template", name=args.name, type=args.type)
+    logger.info(f"📂 Creating {args.type} template: {args.name}")
+    
     # Load configuration
     config = load_config(args.config)
     
@@ -52,23 +58,27 @@ def create_template_cli(args: argparse.Namespace) -> None:
     
     pass_type = pass_type_map.get(args.type)
     if not pass_type:
-        print(f"Error: Unknown pass type '{args.type}'")
+        logger.error(f"❌ Unknown pass type: {args.type}")
         sys.exit(1)
     
-    # Create the template
-    template = create_template(
-        name=args.name,
-        organization_id=args.organization,
-        pass_type=pass_type,
-        description=args.description
-    )
-    
-    # Save the template to a file
-    template_file = Path(args.output) if args.output else Path(f"{args.name.lower().replace(' ', '_')}_template.json")
-    with open(template_file, 'w') as f:
-        f.write(template.json(indent=2))
-    
-    print(f"Template created and saved to {template_file}")
+    try:
+        # Create the template
+        template = create_template(
+            name=args.name,
+            organization_id=args.organization,
+            pass_type=pass_type,
+            description=args.description
+        )
+        
+        # Save the template to a file
+        template_file = Path(args.output) if args.output else Path(f"{args.name.lower().replace(' ', '_')}_template.json")
+        with open(template_file, 'w') as f:
+            f.write(template.json(indent=2))
+        
+        logger.success(f"✅ Template created and saved to {template_file}")
+    except Exception as e:
+        logger.error(f"❌ Failed to create template: {e}")
+        sys.exit(1)
 
 
 def create_pass_cli(args: argparse.Namespace) -> None:
@@ -261,6 +271,12 @@ def send_notification_cli(args: argparse.Namespace) -> None:
 
 def main():
     """Run the CLI application."""
+    logger.info("""
+    [1;36m╔════════════════════════════════════════════════╗[0m
+    [1;36m║             [1;33mpy-wallet-pass CLI[0m               [1;36m║[0m
+    [1;36m║        [0;37mCreate and manage digital wallet passes[0m     [1;36m║[0m
+    [1;36m╚════════════════════════════════════════════════╝[0m
+    """)
     parser = argparse.ArgumentParser(description="Wallet Pass SDK Command Line Interface")
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
     
@@ -324,6 +340,10 @@ def main():
     
     args = parser.parse_args()
     
+    # Log the command being executed
+    if args.command:
+        logger.debug(f"Executing command: {args.command}")
+    
     if args.command == "create-template":
         create_template_cli(args)
     elif args.command == "create-pass":
@@ -335,6 +355,7 @@ def main():
     elif args.command == "send-notification":
         send_notification_cli(args)
     else:
+        logger.info("No command specified, showing help...")
         parser.print_help()
 
 

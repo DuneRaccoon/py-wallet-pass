@@ -5,9 +5,15 @@ This package provides a simple API for creating and managing digital wallet pass
 for both Apple Wallet and Google Wallet platforms.
 """
 
+import sys
+from pathlib import Path
+
 __version__ = "0.1.0"
 
-from pathlib import Path
+# Import the logging configuration first
+from .logging import get_logger, with_context
+
+logger = get_logger(__name__)
 
 from .config import WalletConfig
 from .exceptions import (
@@ -85,13 +91,17 @@ def create_pass_manager(config_dict=None, config=None, storage=None, storage_pat
     if config is None:
         if config_dict is None:
             config_dict = {}
+            logger.debug("Using empty config dictionary")
+        logger.debug("Creating WalletConfig from dictionary")
         config = WalletConfig.from_dict(config_dict)
     
     # Override storage path if provided
     if storage_path is not None:
         config.storage_path = Path(storage_path)
+        logger.debug(f"Set custom storage path: {storage_path}")
     
     # Create the PassManager
+    logger.info("🛠️ Creating PassManager instance")
     manager = PassManager(config, storage=storage)
     
     # Check if any pass providers were initialized
@@ -101,10 +111,19 @@ def create_pass_manager(config_dict=None, config=None, storage=None, storage_pat
         manager.samsung_pass is not None
     ])
     
-    if not has_providers:
-        import logging
-        logging.warning(
-            "No pass providers were initialized. Check your configuration for at least one "
+    if has_providers:
+        provider_names = []
+        if manager.apple_pass is not None:
+            provider_names.append("Apple Wallet")
+        if manager.google_pass is not None:
+            provider_names.append("Google Wallet")
+        if manager.samsung_pass is not None:
+            provider_names.append("Samsung Wallet")
+            
+        logger.success(f"✅ PassManager ready with providers: {', '.join(provider_names)}")
+    else:
+        logger.warning(
+            "⚠️ No pass providers were initialized. Check your configuration for at least one "
             "platform (Apple, Google, or Samsung) and ensure required dependencies are installed."
         )
     

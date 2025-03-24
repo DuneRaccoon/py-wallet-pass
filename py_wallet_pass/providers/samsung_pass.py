@@ -1,8 +1,6 @@
 """Samsung Wallet pass implementation."""
 
 import json
-import logging
-import os
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -12,9 +10,10 @@ from ..config import WalletConfig
 from ..exceptions import PassCreationError, ValidationError
 from ..schema.core import PassData, PassResponse, PassTemplate, PassType, Barcode
 from ..storage import StorageBackend, FileSystemStorage
+from ..logging import get_logger, with_context
 from .base import BasePass
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 try:
     import requests

@@ -1,20 +1,43 @@
 from __future__ import annotations
 
 import abc
-import logging
-import uuid
 from typing import Any, Dict, List, Optional, Union
 
 from ..config import WalletConfig
 from ..exceptions import PassCreationError
 from ..schema.core import PassData, PassResponse, PassTemplate, PassType
 from ..storage import StorageBackend, FileSystemStorage
+from ..logging import get_logger, with_context
 
-from .apple_pass import ApplePass
-from .google_pass import GooglePass
-from .samsung_pass import SamsungPass
+logger = get_logger(__name__)
 
-logger = logging.getLogger(__name__)
+# Check for optional providers
+try:
+    from .apple_pass import ApplePass
+except ImportError:
+    class ApplePass:
+        def __init__(self, *args, **kwargs):
+            pass
+    ApplePass._dummy = True  # Mark as dummy implementation
+    logger.debug("⚠️ Apple Wallet provider not available (missing dependencies)")
+
+try:
+    from .google_pass import GooglePass
+except ImportError:
+    class GooglePass:
+        def __init__(self, *args, **kwargs):
+            pass
+    GooglePass._dummy = True  # Mark as dummy implementation
+    logger.debug("⚠️ Google Wallet provider not available (missing dependencies)")
+
+try:
+    from .samsung_pass import SamsungPass
+except ImportError:
+    class SamsungPass:
+        def __init__(self, *args, **kwargs):
+            pass
+    SamsungPass._dummy = True  # Mark as dummy implementation
+    logger.debug("⚠️ Samsung Wallet provider not available (missing dependencies)")
 
 
 class PassManager:
@@ -41,20 +64,23 @@ class PassManager:
         if not self.apple_pass and self._has_apple_config():
             try:
                 self.apple_pass = ApplePass(config, storage=self.storage)
+                logger.info("💾 Apple Wallet provider initialized successfully")
             except Exception as e:
-                logger.warning(f"Failed to initialize Apple Pass provider: {e}")
+                logger.warning(f"⚠️ Failed to initialize Apple Pass provider: {e}")
         
         if not self.google_pass and self._has_google_config():
             try:
                 self.google_pass = GooglePass(config, storage=self.storage)
+                logger.info("💾 Google Wallet provider initialized successfully")
             except Exception as e:
-                logger.warning(f"Failed to initialize Google Pass provider: {e}")
+                logger.warning(f"⚠️ Failed to initialize Google Pass provider: {e}")
         
         if not self.samsung_pass and self._has_samsung_config():
             try:
                 self.samsung_pass = SamsungPass(config, storage=self.storage)
+                logger.info("💾 Samsung Wallet provider initialized successfully")
             except Exception as e:
-                logger.warning(f"Failed to initialize Samsung Pass provider: {e}")
+                logger.warning(f"⚠️ Failed to initialize Samsung Pass provider: {e}")
     
     def _has_apple_config(self) -> bool:
         """Check if Apple Wallet configuration is available."""
@@ -104,30 +130,56 @@ class PassManager:
         Returns:
             Dict mapping platform to pass response
         """
+        context = with_context(
+            action="create_pass",
+            template_id=template.id,
+            template_name=template.name,
+            pass_type=template.pass_type.value,
+            customer_id=pass_data.customer_id
+        )
+        
         if create_for is None:
             create_for = ["apple", "google", "samsung"]
+            logger.bind(**context).debug(f"Creating pass for all platforms: {create_for}")
+        else:
+            logger.bind(**context).debug(f"Creating pass for platforms: {create_for}")
         
         result = {}
         
         # Generate a common serial number if not provided
         if not pass_data.serial_number:
+            import uuid
             pass_data.serial_number = str(uuid.uuid4())
+            logger.bind(**context).debug(f"Generated serial number: {pass_data.serial_number}")
         
         # Create passes for specified platforms
         if "apple" in create_for and self.apple_pass and self._is_apple_pass_type(template.pass_type):
-            result["apple"] = self.apple_pass.create_pass(pass_data, template)
+            try:
+                result["apple"] = self.apple_pass.create_pass(pass_data, template)
+                logger.bind(**context).info("🍏 Created Apple Wallet pass")
+            except Exception as e:
+                logger.bind(**context).error(f"❌ Failed to create Apple Wallet pass: {e}")
         
         if "google" in create_for and self.google_pass and self._is_google_pass_type(template.pass_type):
-            result["google"] = self.google_pass.create_pass(pass_data, template)
+            try:
+                result["google"] = self.google_pass.create_pass(pass_data, template)
+                logger.bind(**context).info("📱 Created Google Wallet pass")
+            except Exception as e:
+                logger.bind(**context).error(f"❌ Failed to create Google Wallet pass: {e}")
         
         if "samsung" in create_for and self.samsung_pass and self._is_samsung_pass_type(template.pass_type):
-            result["samsung"] = self.samsung_pass.create_pass(pass_data, template)
+            try:
+                result["samsung"] = self.samsung_pass.create_pass(pass_data, template)
+                logger.bind(**context).info("📱 Created Samsung Wallet pass")
+            except Exception as e:
+                logger.bind(**context).error(f"❌ Failed to create Samsung Wallet pass: {e}")
         
         if not result:
-            raise PassCreationError(
-                "Failed to create passes: No compatible pass platforms available"
-            )
+            error_msg = "Failed to create passes: No compatible pass platforms available"
+            logger.bind(**context).error(f"❌ {error_msg}")
+            raise PassCreationError(error_msg)
         
+        logger.bind(**context).success(f"🎉 Successfully created passes for {list(result.keys())}")
         return result
     
     def update_pass(

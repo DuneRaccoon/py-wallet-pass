@@ -1,9 +1,6 @@
 """Google Wallet pass implementation."""
 
 import json
-import logging
-import os
-import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -12,9 +9,10 @@ from ..config import WalletConfig
 from ..exceptions import GoogleWalletError, PassCreationError
 from ..schema.core import PassData, PassResponse, PassTemplate, PassType, Barcode, PassField
 from ..storage import StorageBackend, FileSystemStorage
+from ..logging import get_logger, with_context
 from .base import BasePass
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 try:
     from google.oauth2 import service_account

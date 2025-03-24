@@ -2,13 +2,14 @@
 
 import abc
 import json
-import logging
 import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-logger = logging.getLogger(__name__)
+from .logging import get_logger, with_context
+
+logger = get_logger(__name__)
 
 
 class StorageBackend(abc.ABC):
@@ -53,46 +54,55 @@ class FileSystemStorage(StorageBackend):
         with open(pass_path, 'w') as f:
             json.dump(pass_data, f, indent=2)
         
-        logger.debug(f"Stored {provider} pass {pass_id} to {pass_path}")
+        context = with_context(provider=provider, pass_id=pass_id, path=str(pass_path))
+        logger.bind(**context).debug("✅ Stored pass data to filesystem")
     
     def retrieve_pass(self, provider: str, pass_id: str) -> Dict[str, Any]:
         """Retrieve pass data from the file system."""
         pass_path = self.storage_path / provider / "passes" / f"{pass_id}.json"
         
         if not pass_path.exists():
+            context = with_context(provider=provider, pass_id=pass_id, path=str(pass_path))
+            logger.bind(**context).error("❌ Pass file not found")
             raise FileNotFoundError(f"Pass not found: {pass_id}")
         
         with open(pass_path, 'r') as f:
             pass_data = json.load(f)
         
-        logger.debug(f"Retrieved {provider} pass {pass_id} from {pass_path}")
+        context = with_context(provider=provider, pass_id=pass_id, path=str(pass_path))
+        logger.bind(**context).debug("✅ Retrieved pass data from filesystem")
         
         return pass_data
     
     def delete_pass(self, provider: str, pass_id: str) -> bool:
         """Delete pass data from the file system."""
         pass_path = self.storage_path / provider / "passes" / f"{pass_id}.json"
+        context = with_context(provider=provider, pass_id=pass_id, path=str(pass_path))
         
         if not pass_path.exists():
-            logger.warning(f"Pass not found for deletion: {pass_id}")
+            logger.bind(**context).warning("⚠️ Pass not found for deletion")
             return False
         
         os.remove(pass_path)
-        logger.debug(f"Deleted {provider} pass {pass_id} from {pass_path}")
+        logger.bind(**context).info("🗑️ Deleted pass from filesystem")
         
         return True
     
     def list_passes(self, provider: str) -> List[str]:
         """List all pass IDs stored in the file system."""
         provider_dir = self.storage_path / provider / "passes"
+        context = with_context(provider=provider, directory=str(provider_dir))
         
         if not provider_dir.exists():
+            logger.bind(**context).debug("ℹ️ Provider directory does not exist")
             return []
         
         pass_ids = []
         for file_path in provider_dir.glob("*.json"):
             pass_id = file_path.stem
             pass_ids.append(pass_id)
+        
+        logger.bind(**context).debug(f"📃 Found {len(pass_ids)} passes")
         
         return pass_ids
 
@@ -110,32 +120,43 @@ class MemoryStorage(StorageBackend):
             self.passes[provider] = {}
         
         self.passes[provider][pass_id] = pass_data
-        logger.debug(f"Stored {provider} pass {pass_id} in memory")
+        context = with_context(provider=provider, pass_id=pass_id)
+        logger.bind(**context).debug("✅ Stored pass data in memory")
     
     def retrieve_pass(self, provider: str, pass_id: str) -> Dict[str, Any]:
         """Retrieve pass data from memory."""
+        context = with_context(provider=provider, pass_id=pass_id)
+        
         if provider not in self.passes or pass_id not in self.passes[provider]:
+            logger.bind(**context).error("❌ Pass not found in memory storage")
             raise KeyError(f"Pass not found: {provider}/{pass_id}")
         
-        logger.debug(f"Retrieved {provider} pass {pass_id} from memory")
+        logger.bind(**context).debug("✅ Retrieved pass data from memory")
         return self.passes[provider][pass_id]
     
     def delete_pass(self, provider: str, pass_id: str) -> bool:
         """Delete pass data from memory."""
+        context = with_context(provider=provider, pass_id=pass_id)
+        
         if provider not in self.passes or pass_id not in self.passes[provider]:
-            logger.warning(f"Pass not found for deletion: {provider}/{pass_id}")
+            logger.bind(**context).warning("⚠️ Pass not found for deletion in memory")
             return False
         
         del self.passes[provider][pass_id]
-        logger.debug(f"Deleted {provider} pass {pass_id} from memory")
+        logger.bind(**context).info("🗑️ Deleted pass from memory")
         return True
     
     def list_passes(self, provider: str) -> List[str]:
         """List all pass IDs stored in memory."""
+        context = with_context(provider=provider)
+        
         if provider not in self.passes:
+            logger.bind(**context).debug("ℹ️ No passes found for provider in memory")
             return []
         
-        return list(self.passes[provider].keys())
+        pass_ids = list(self.passes[provider].keys())
+        logger.bind(**context).debug(f"📃 Found {len(pass_ids)} passes in memory")
+        return pass_ids
 
 
 # Factory function to create a storage backend

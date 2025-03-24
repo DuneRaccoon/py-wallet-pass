@@ -1,7 +1,6 @@
 import base64
 import hashlib
 import json
-import logging
 import os
 import tempfile
 import zipfile
@@ -16,9 +15,10 @@ from ..config import WalletConfig
 from ..exceptions import AppleWalletError, CertificateError, PassCreationError
 from ..schema.core import PassData, PassResponse, PassTemplate, PassType, Barcode
 from ..storage import StorageBackend, FileSystemStorage
+from ..logging import get_logger, with_context
 from .base import BasePass
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class ApplePass(BasePass):
@@ -103,11 +103,19 @@ class ApplePass(BasePass):
             # Create a unique ID for the pass
             pass_id = f"{self.config.apple_pass_type_identifier}.{pass_data.serial_number}"
             
+            context = with_context(
+                action="create_pass",
+                platform="apple", 
+                pass_id=pass_id,
+                template_id=template.id,
+                customer_id=pass_data.customer_id
+            )
+            
             # Store the pass data for retrieval
             self._store_pass_data(pass_id, pass_json)
             
             # Return the pass response
-            return PassResponse(
+            response = PassResponse(
                 id=pass_id,
                 template_id=template.id,
                 customer_id=pass_data.customer_id,
@@ -122,7 +130,17 @@ class ApplePass(BasePass):
                 apple_pass_id=pass_id,
                 apple_pass_url=self._generate_pass_url(pass_id)
             )
+            
+            logger.bind(**context).success("🍏 Created new Apple Wallet pass successfully")
+            return response
         except Exception as e:
+            context = with_context(
+                action="create_pass_error",
+                platform="apple", 
+                customer_id=pass_data.customer_id,
+                error=str(e)
+            )
+            logger.bind(**context).error(f"❌ Failed to create Apple Wallet pass: {e}")
             raise PassCreationError(f"Failed to create Apple pass: {e}")
     
     def update_pass(self, pass_id: str, pass_data: PassData, template: PassTemplate) -> PassResponse:
@@ -211,12 +229,21 @@ class ApplePass(BasePass):
     def generate_pass_file(self, pass_id: str, template: PassTemplate) -> bytes:
         """Generate an Apple Wallet .pkpass file."""
         try:
+            context = with_context(
+                action="generate_pass_file",
+                platform="apple", 
+                pass_id=pass_id,
+                template_id=template.id
+            )
+            logger.bind(**context).debug("📦 Starting pass file generation")
+            
             # Retrieve the pass data
             pass_json = self._retrieve_pass_data(pass_id)
             
             # Create a temporary directory for the pass files
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_path = Path(temp_dir)
+                logger.bind(**context).debug(f"Created temporary directory at {temp_dir}")
                 
                 # Write the pass.json file
                 with open(temp_path / 'pass.json', 'w') as f:
@@ -235,6 +262,7 @@ class ApplePass(BasePass):
                 with open(temp_path / 'signature', 'wb') as f:
                     f.write(signature)
                 
+                logger.bind(**context).debug("Creating .pkpass archive")
                 # Create the .pkpass file
                 buffer = io.BytesIO()
                 with zipfile.ZipFile(buffer, 'w') as zip_file:
@@ -243,8 +271,13 @@ class ApplePass(BasePass):
                 
                 # Return the .pkpass data
                 buffer.seek(0)
-                return buffer.read()
+                pkpass_data = buffer.read()
+                
+                logger.bind(**context).success(f"🎉 Successfully generated .pkpass file ({len(pkpass_data)/1024:.1f} KB)")
+                return pkpass_data
         except Exception as e:
+            context = with_context(action="generate_pass_file_error", platform="apple", pass_id=pass_id, error=str(e))
+            logger.bind(**context).error(f"⚠️ Failed to generate Apple Wallet pass file: {e}")
             raise AppleWalletError(f"Failed to generate Apple Wallet pass file: {e}")
     
     def send_update_notification(self, pass_id: str) -> bool:
