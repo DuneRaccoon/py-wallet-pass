@@ -24,6 +24,13 @@ class PassType(str, Enum):
     GOOGLE_EVENT_TICKET = "eventTicket"
     GOOGLE_FLIGHT = "flight"
     GOOGLE_TRANSIT = "transit"
+    
+    # Samsung Wallet pass types
+    SAMSUNG_COUPON = "coupon"
+    SAMSUNG_MEMBERSHIP = "membership"
+    SAMSUNG_TICKET = "ticket"
+    SAMSUNG_BOARDING = "boarding"
+    SAMSUNG_VOUCHER = "voucher"
 
 
 class Barcode(BaseModel):

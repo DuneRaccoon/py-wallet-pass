@@ -19,6 +19,12 @@ class WalletConfig:
         google_application_credentials: Optional[str] = None,
         google_issuer_id: Optional[str] = None,
         
+        # Samsung Wallet settings
+        samsung_issuer_id: Optional[str] = None,
+        samsung_api_key: Optional[str] = None,
+        samsung_service_id: Optional[str] = None,
+        samsung_api_base_url: Optional[str] = None,
+        
         # Pass storage
         storage_path: Optional[str] = None,
         
@@ -39,6 +45,12 @@ class WalletConfig:
         # Google Wallet settings
         self.google_application_credentials = Path(google_application_credentials) if google_application_credentials else None
         self.google_issuer_id = google_issuer_id
+        
+        # Samsung Wallet settings
+        self.samsung_issuer_id = samsung_issuer_id
+        self.samsung_api_key = samsung_api_key
+        self.samsung_service_id = samsung_service_id
+        self.samsung_api_base_url = samsung_api_base_url
         
         # Pass storage
         self.storage_path = Path(storage_path) if storage_path else Path("/tmp/py_wallet_pass")

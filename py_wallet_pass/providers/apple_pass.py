@@ -15,6 +15,7 @@ from OpenSSL import crypto
 from ..config import WalletConfig
 from ..exceptions import AppleWalletError, CertificateError, PassCreationError
 from ..schema.core import PassData, PassResponse, PassTemplate, PassType, Barcode
+from ..storage import StorageBackend, FileSystemStorage
 from .base import BasePass
 
 logger = logging.getLogger(__name__)
@@ -23,9 +24,12 @@ logger = logging.getLogger(__name__)
 class ApplePass(BasePass):
     """Implementation of Apple Wallet passes."""
     
-    def __init__(self, config: WalletConfig):
+    def __init__(self, config: WalletConfig, storage: Optional[StorageBackend] = None):
         """Initialize with configuration."""
         super().__init__(config)
+        
+        # Initialize storage
+        self.storage = storage or FileSystemStorage(config.storage_path)
         
         # Validate required configuration
         self._validate_config()
@@ -467,24 +471,14 @@ class ApplePass(BasePass):
     
     def _store_pass_data(self, pass_id: str, pass_json: Dict[str, Any]) -> None:
         """Store the pass data for retrieval."""
-        # Create the storage directory if it doesn't exist
-        storage_dir = self.config.storage_path / "apple" / "passes"
-        storage_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Store the pass data
-        pass_path = storage_dir / f"{pass_id}.json"
-        with open(pass_path, 'w') as f:
-            json.dump(pass_json, f)
+        self.storage.store_pass("apple", pass_id, pass_json)
     
     def _retrieve_pass_data(self, pass_id: str) -> Dict[str, Any]:
         """Retrieve stored pass data."""
-        pass_path = self.config.storage_path / "apple" / "passes" / f"{pass_id}.json"
-        
-        if not pass_path.exists():
+        try:
+            return self.storage.retrieve_pass("apple", pass_id)
+        except Exception as e:
             raise AppleWalletError(f"Pass not found: {pass_id}")
-        
-        with open(pass_path, 'r') as f:
-            return json.load(f)
     
     def _generate_authentication_token(self) -> str:
         """Generate a random authentication token."""

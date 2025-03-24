@@ -35,6 +35,11 @@ class AppleWalletError(PyWalletPassError):
     pass
 
 
+class SamsungWalletError(PyWalletPassError):
+    """Raised when a Samsung Wallet operation fails."""
+    pass
+
+
 class ValidationError(PyWalletPassError):
     """Raised when validation fails."""
     pass

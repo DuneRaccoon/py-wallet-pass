@@ -8,9 +8,11 @@ from typing import Any, Dict, List, Optional, Union
 from ..config import WalletConfig
 from ..exceptions import PassCreationError
 from ..schema.core import PassData, PassResponse, PassTemplate, PassType
+from ..storage import StorageBackend, FileSystemStorage
 
 from .apple_pass import ApplePass
 from .google_pass import GooglePass
+from .samsung import SamsungPass
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +20,10 @@ logger = logging.getLogger(__name__)
 class BasePass(abc.ABC):
     """Abstract base class for wallet pass implementations."""
     
-    def __init__(self, config: WalletConfig):
+    def __init__(self, config: WalletConfig, storage: Optional[StorageBackend] = None):
         """Initialize with configuration."""
         self.config = config
+        self.storage = storage
     
     @abc.abstractmethod
     def create_pass(self, pass_data: PassData, template: PassTemplate) -> PassResponse:
@@ -61,24 +64,36 @@ class PassManager:
         config: WalletConfig,
         apple_pass: Optional["ApplePass"] = None,
         google_pass: Optional["GooglePass"] = None,
+        samsung_pass: Optional["SamsungPass"] = None,
+        storage: Optional[StorageBackend] = None,
     ):
         """Initialize with pass implementations."""
         self.config = config
         self.apple_pass = apple_pass
         self.google_pass = google_pass
+        self.samsung_pass = samsung_pass
+        
+        # Initialize storage backend if not provided
+        self.storage = storage or FileSystemStorage(config.storage_path)
         
         # Initialize pass providers if not provided
         if not self.apple_pass and self._has_apple_config():
             try:
-                self.apple_pass = ApplePass(config)
+                self.apple_pass = ApplePass(config, storage=self.storage)
             except Exception as e:
                 logger.warning(f"Failed to initialize Apple Pass provider: {e}")
         
         if not self.google_pass and self._has_google_config():
             try:
-                self.google_pass = GooglePass(config)
+                self.google_pass = GooglePass(config, storage=self.storage)
             except Exception as e:
                 logger.warning(f"Failed to initialize Google Pass provider: {e}")
+        
+        if not self.samsung_pass and self._has_samsung_config():
+            try:
+                self.samsung_pass = SamsungPass(config, storage=self.storage)
+            except Exception as e:
+                logger.warning(f"Failed to initialize Samsung Pass provider: {e}")
     
     def _has_apple_config(self) -> bool:
         """Check if Apple Wallet configuration is available."""
@@ -97,6 +112,11 @@ class PassManager:
             self.config.google_issuer_id,
         ])
     
+    def _has_samsung_config(self) -> bool:
+        """Check if Samsung Wallet configuration is available."""
+        required_attrs = ['samsung_issuer_id', 'samsung_api_key', 'samsung_service_id']
+        return all(hasattr(self.config, attr) and getattr(self.config, attr) for attr in required_attrs)
+    
     def _is_apple_pass_type(self, pass_type: PassType) -> bool:
         """Check if the pass type is for Apple Wallet."""
         return pass_type.name.startswith("APPLE_")
@@ -104,6 +124,10 @@ class PassManager:
     def _is_google_pass_type(self, pass_type: PassType) -> bool:
         """Check if the pass type is for Google Wallet."""
         return pass_type.name.startswith("GOOGLE_")
+    
+    def _is_samsung_pass_type(self, pass_type: PassType) -> bool:
+        """Check if the pass type is for Samsung Wallet."""
+        return pass_type.name.startswith("SAMSUNG_")
     
     def create_pass(
         self, pass_data: PassData, template: PassTemplate, create_for: Optional[List[str]] = None
@@ -120,7 +144,7 @@ class PassManager:
             Dict mapping platform to pass response
         """
         if create_for is None:
-            create_for = ["apple", "google"]
+            create_for = ["apple", "google", "samsung"]
         
         result = {}
         
@@ -134,6 +158,9 @@ class PassManager:
         
         if "google" in create_for and self.google_pass and self._is_google_pass_type(template.pass_type):
             result["google"] = self.google_pass.create_pass(pass_data, template)
+        
+        if "samsung" in create_for and self.samsung_pass and self._is_samsung_pass_type(template.pass_type):
+            result["samsung"] = self.samsung_pass.create_pass(pass_data, template)
         
         if not result:
             raise PassCreationError(
@@ -158,7 +185,7 @@ class PassManager:
             Dict mapping platform to pass response
         """
         if update_for is None:
-            update_for = ["apple", "google"]
+            update_for = ["apple", "google", "samsung"]
         
         result = {}
         
@@ -174,6 +201,12 @@ class PassManager:
                 result["google"] = self.google_pass.update_pass(pass_id, pass_data, template)
             except Exception as e:
                 logger.error(f"Failed to update Google pass: {e}")
+        
+        if "samsung" in update_for and self.samsung_pass and self._is_samsung_pass_type(template.pass_type):
+            try:
+                result["samsung"] = self.samsung_pass.update_pass(pass_id, pass_data, template)
+            except Exception as e:
+                logger.error(f"Failed to update Samsung pass: {e}")
         
         if not result:
             raise PassCreationError(
@@ -197,7 +230,7 @@ class PassManager:
             Dict mapping platform to pass response
         """
         if void_for is None:
-            void_for = ["apple", "google"]
+            void_for = ["apple", "google", "samsung"]
         
         result = {}
         
@@ -213,6 +246,12 @@ class PassManager:
                 result["google"] = self.google_pass.void_pass(pass_id)
             except Exception as e:
                 logger.error(f"Failed to void Google pass: {e}")
+        
+        if "samsung" in void_for and self.samsung_pass and self._is_samsung_pass_type(template.pass_type):
+            try:
+                result["samsung"] = self.samsung_pass.void_pass(pass_id)
+            except Exception as e:
+                logger.error(f"Failed to void Samsung pass: {e}")
         
         if not result:
             raise PassCreationError(
@@ -236,7 +275,7 @@ class PassManager:
             Dict mapping platform to pass file bytes
         """
         if platforms is None:
-            platforms = ["apple", "google"]
+            platforms = ["apple", "google", "samsung"]
         
         result = {}
         
@@ -252,6 +291,12 @@ class PassManager:
                 result["google"] = self.google_pass.generate_pass_file(pass_id, template)
             except Exception as e:
                 logger.error(f"Failed to generate Google pass file: {e}")
+        
+        if "samsung" in platforms and self.samsung_pass and self._is_samsung_pass_type(template.pass_type):
+            try:
+                result["samsung"] = self.samsung_pass.generate_pass_file(pass_id, template)
+            except Exception as e:
+                logger.error(f"Failed to generate Samsung pass file: {e}")
         
         if not result:
             raise PassCreationError(
@@ -275,7 +320,7 @@ class PassManager:
             Dict mapping platform to success status
         """
         if platforms is None:
-            platforms = ["apple", "google"]
+            platforms = ["apple", "google", "samsung"]
         
         result = {}
         
@@ -293,5 +338,12 @@ class PassManager:
             except Exception as e:
                 logger.error(f"Failed to send Google pass notification: {e}")
                 result["google"] = False
+        
+        if "samsung" in platforms and self.samsung_pass and self._is_samsung_pass_type(template.pass_type):
+            try:
+                result["samsung"] = self.samsung_pass.send_update_notification(pass_id)
+            except Exception as e:
+                logger.error(f"Failed to send Samsung pass notification: {e}")
+                result["samsung"] = False
         
         return result

@@ -6,6 +6,11 @@ except ImportError:
     pass
 
 try:
+    from .samsung import SamsungPass
+except ImportError:
+    pass
+
+try:
     from .google_pass import GooglePass
 except ImportError:
     pass
