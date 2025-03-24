@@ -18,7 +18,7 @@ The py-wallet-pass SDK provides several key objects for customizing passes:
 The `PassStyle` class allows you to define the visual style of your passes:
 
 ```python
-from py_wallet_pass import PassStyle
+from wallet_pass import PassStyle
 
 # Create a style for a coffee shop loyalty card
 style = PassStyle(
@@ -57,7 +57,7 @@ background_color="#FF5733"    # RGB only
 The `PassImages` class defines the images used in your pass:
 
 ```python
-from py_wallet_pass import PassImages
+from wallet_pass import PassImages
 
 # Define images for an event ticket
 images = PassImages(
@@ -130,33 +130,33 @@ Passes are organized into sections to create a clear visual hierarchy:
 Use the `add_field_to_template` utility to add fields:
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 
 # Create a template first
-template = pwp.utils.create_loyalty_pass_template(
+template = wp.utils.create_loyalty_pass_template(
     name="Coffee Rewards",
     organization_id="coffeecompany",
     platform="both"
 )
 
 # Add fields to different sections
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "header", "member_name", "Member", ""
 )
 
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "points", "Points", "0"
 )
 
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "member_since", "Member Since", "January 2023"
 )
 
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "membership_level", "Level", "Gold"
 )
 
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "program_details", "Program Details",
     "Earn 1 point for every $1 spent. 100 points = free coffee."
 )
@@ -168,7 +168,7 @@ Fields have several properties you can customize:
 
 ```python
 # Add a field with additional properties
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "balance", "Balance", "0",
     change_message="Your balance changed to %@",  # Message shown when value changes
     text_alignment="right",                       # left, center, or right
@@ -188,7 +188,7 @@ Different pass types have unique characteristics and field requirements.
 
 ```python
 # Create an event ticket template
-template = pwp.utils.create_event_pass_template(
+template = wp.utils.create_event_pass_template(
     name="Summer Music Festival",
     organization_id="eventcompany",
     platform="both",
@@ -206,25 +206,25 @@ template = pwp.utils.create_event_pass_template(
 )
 
 # Add event-specific fields
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "header", "event_name", "Event", "Summer Music Festival"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "event_date", "Date", "June 15, 2025"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "event_time", "Time", "7:30 PM"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "venue", "Venue", "Central Park"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "ticket_type", "Ticket", "VIP Access"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "seat", "Seat", "GA-101"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "event_details", "Details", 
     "Gates open at 6:00 PM. No re-entry after exit."
 )
@@ -234,7 +234,7 @@ pwp.utils.add_field_to_template(
 
 ```python
 # Create a loyalty card template
-template = pwp.utils.create_loyalty_pass_template(
+template = wp.utils.create_loyalty_pass_template(
     name="Coffee Rewards",
     organization_id="coffeecompany",
     platform="both",
@@ -251,23 +251,23 @@ template = pwp.utils.create_loyalty_pass_template(
 )
 
 # Add loyalty-specific fields
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "header", "member_name", "Member", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "points", "Points", "0"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "member_since", "Member Since", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "membership_level", "Level", "Standard"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "program_details", "Program Details", 
     "Earn 1 point for every $1 spent."
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "rewards", "Rewards", 
     "100 points = Free coffee\n500 points = Free lunch"
 )
@@ -277,7 +277,7 @@ pwp.utils.add_field_to_template(
 
 ```python
 # Create a coupon template
-template = pwp.utils.create_coupon_pass_template(
+template = wp.utils.create_coupon_pass_template(
     name="25% Off Everything",
     organization_id="retailcompany",
     platform="both",
@@ -295,16 +295,16 @@ template = pwp.utils.create_coupon_pass_template(
 )
 
 # Add coupon-specific fields
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "offer", "Offer", "25% Off Everything"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "expiration", "Expires", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "promo_code", "Promo Code", "SAVE25"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "terms", "Terms & Conditions", 
     "Valid in-store only. Cannot be combined with other offers."
 )
@@ -314,7 +314,7 @@ pwp.utils.add_field_to_template(
 
 ```python
 # Create a boarding pass template
-template = pwp.utils.create_boarding_pass_template(
+template = wp.utils.create_boarding_pass_template(
     name="Acme Airlines",
     organization_id="acmeair",
     platform="both",
@@ -332,28 +332,28 @@ template = pwp.utils.create_boarding_pass_template(
 )
 
 # Add boarding pass-specific fields
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "header", "passenger_name", "Passenger", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "flight", "Flight", "AC123"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "departure", "Departs", "SFO 10:00 AM"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "arrival", "Arrives", "JFK 6:30 PM"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "gate", "Gate", "B12"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "seat", "Seat", "14A"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "boarding", "Boarding", "9:30 AM"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "flight_details", "Flight Details", 
     "Boeing 787. Flight time: 5h 30m. WiFi available."
 )
@@ -366,7 +366,7 @@ pwp.utils.add_field_to_template(
 You can specify the barcode format when creating a template:
 
 ```python
-template = pwp.utils.create_loyalty_pass_template(
+template = wp.utils.create_loyalty_pass_template(
     name="Coffee Rewards",
     organization_id="coffeecompany",
     platform="both",
@@ -388,7 +388,7 @@ template = pwp.utils.create_loyalty_pass_template(
 When creating pass data, specify the barcode content:
 
 ```python
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer123",
     barcode_message="MEMBER123456",        # Content encoded in the barcode
@@ -404,7 +404,7 @@ pass_data = pwp.utils.create_pass_data(
 You can associate geographic locations with a pass to trigger notifications when the user is nearby:
 
 ```python
-from py_wallet_pass import utils
+from wallet_pass import utils
 
 # Create locations
 coffee_shop_downtown = utils.create_location(
@@ -422,7 +422,7 @@ coffee_shop_uptown = utils.create_location(
 )
 
 # Add locations to the template
-template = pwp.utils.create_loyalty_pass_template(
+template = wp.utils.create_loyalty_pass_template(
     # ... other parameters
     locations=[coffee_shop_downtown, coffee_shop_uptown]
 )
@@ -435,7 +435,7 @@ You can specify when a pass becomes relevant:
 ```python
 # Create pass data with a relevant date
 event_date = datetime.datetime(2025, 6, 15, 19, 30)
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     # ... other parameters
     relevant_date=event_date,  # Pass becomes relevant near this date
     # ... other fields
@@ -450,7 +450,7 @@ You can create different templates for each platform:
 
 ```python
 # Create an Apple-specific template
-apple_template = pwp.utils.create_coupon_pass_template(
+apple_template = wp.utils.create_coupon_pass_template(
     name="25% Off Everything",
     organization_id="retailcompany",
     platform="apple",
@@ -463,7 +463,7 @@ apple_template = pwp.utils.create_coupon_pass_template(
 )
 
 # Create a Google-specific template with different styling
-google_template = pwp.utils.create_coupon_pass_template(
+google_template = wp.utils.create_coupon_pass_template(
     name="25% Off Everything",
     organization_id="retailcompany",
     platform="google",
@@ -481,7 +481,7 @@ google_template = pwp.utils.create_coupon_pass_template(
 For Apple Wallet passes, you can enable NFC functionality:
 
 ```python
-from py_wallet_pass import NFC
+from wallet_pass import NFC
 
 # Create NFC data
 nfc_data = NFC(
@@ -491,7 +491,7 @@ nfc_data = NFC(
 )
 
 # Create a template with NFC enabled
-template = pwp.utils.create_loyalty_pass_template(
+template = wp.utils.create_loyalty_pass_template(
     # ... other parameters
     nfc_enabled=True,
     nfc_data=nfc_data
@@ -505,7 +505,7 @@ Set an expiration date for passes:
 ```python
 # Set an expiration date 30 days from now
 expiration_date = datetime.datetime.now() + datetime.timedelta(days=30)
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     # ... other parameters
     expiration_date=expiration_date,
     # ... other fields

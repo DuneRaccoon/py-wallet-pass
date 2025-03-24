@@ -46,11 +46,11 @@ openssl x509 -inform der -in AppleWWDRCA.cer -out wwdr.pem
 Here's how to create a simple Apple Wallet pass:
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 import datetime
 
 # Configure the SDK
-config = pwp.WalletConfig(
+config = wp.WalletConfig(
     apple_pass_type_identifier="pass.com.yourcompany.passtype",
     apple_team_identifier="ABCDE12345",  # Your team ID
     apple_organization_name="Your Company Name",
@@ -62,20 +62,20 @@ config = pwp.WalletConfig(
 )
 
 # Create a pass manager
-manager = pwp.create_pass_manager(config=config)
+manager = wp.create_pass_manager(config=config)
 
 # Create a template (this example is for an event ticket)
-template = pwp.utils.create_event_pass_template(
+template = wp.utils.create_event_pass_template(
     name="Summer Festival",
     organization_id="your-company",
     platform="apple",
-    style=pwp.PassStyle(
+    style=wp.PassStyle(
         background_color="#FF5733",
         foreground_color="#FFFFFF",
         label_color="#FFCCCB",
         logo_text="Summer Festival"
     ),
-    images=pwp.PassImages(
+    images=wp.PassImages(
         logo="images/logo.png",
         icon="images/icon.png",
         strip="images/strip.png"  # Optional header image
@@ -84,7 +84,7 @@ template = pwp.utils.create_event_pass_template(
 
 # Create pass data
 event_date = datetime.datetime(2025, 6, 15, 19, 30)
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer123",
     barcode_message="TICKET123456",
@@ -119,7 +119,7 @@ To update an existing pass and send a push notification:
 
 ```python
 # Update the pass with new information
-updated_data = pwp.utils.create_pass_data(
+updated_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer123",
     serial_number=response['apple'].serial_number,  # Use the same serial number
@@ -151,14 +151,14 @@ To support updates and push notifications, you'll need to set up a web service. 
 You can customize the appearance of your pass by adjusting the `PassStyle` and `PassImages` objects:
 
 ```python
-style = pwp.PassStyle(
+style = wp.PassStyle(
     background_color="#1E3A8A",  # Dark blue background
     foreground_color="#FFFFFF",  # White text
     label_color="#93C5FD",       # Light blue labels
     logo_text="VIP Concert Pass"
 )
 
-images = pwp.PassImages(
+images = wp.PassImages(
     logo="images/logo.png",      # Main logo (required)
     icon="images/icon.png",      # Small icon (required)
     strip="images/strip.png",    # Header image (optional)

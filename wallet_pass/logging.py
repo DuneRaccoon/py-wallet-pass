@@ -44,7 +44,7 @@ logger.add(
 )
 
 # Set up file logging if log directory is available
-LOG_DIR = os.environ.get("PY_WALLET_PASS_LOG_DIR", None)
+LOG_DIR = os.environ.get("WALLET_PASS_LOG_DIR", None)
 if LOG_DIR:
     log_path = Path(LOG_DIR)
     if not log_path.exists():

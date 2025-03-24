@@ -33,11 +33,11 @@ Once your account is set up:
 Here's how to create a simple Samsung Wallet pass:
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 import datetime
 
 # Configure the SDK
-config = pwp.WalletConfig(
+config = wp.WalletConfig(
     samsung_issuer_id="your-samsung-issuer-id",
     samsung_api_key="your-samsung-api-key",
     samsung_service_id="your-samsung-service-id",
@@ -47,50 +47,50 @@ config = pwp.WalletConfig(
 )
 
 # Create a pass manager
-manager = pwp.create_pass_manager(config=config)
+manager = wp.create_pass_manager(config=config)
 
 # Create a membership card template
-template = pwp.utils.create_template(
+template = wp.utils.create_template(
     name="Fitness Club Membership",
     organization_id="your-company",
-    pass_type=pwp.PassType.SAMSUNG_MEMBERSHIP,
+    pass_type=wp.PassType.SAMSUNG_MEMBERSHIP,
     description="Fitness Club Membership Card",
-    style=pwp.PassStyle(
+    style=wp.PassStyle(
         background_color="#1E3A8A",  # Dark blue
         foreground_color="#FFFFFF",  # White
         label_color="#93C5FD",       # Light blue
         logo_text="Fitness Club"
     ),
-    images=pwp.PassImages(
+    images=wp.PassImages(
         logo="images/logo.png",
         icon="images/icon.png"
     )
 )
 
 # Add fields to the template
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "header", "member_name", "Member", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "member_id", "Member ID", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "membership_type", "Membership", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "expiration", "Valid Until", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "tier", "Tier", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "gym_locations", "Club Locations", 
     "Downtown: 123 Main St\nUptown: 456 North Ave\nWestside: 789 West Blvd"
 )
 
 # Create pass data
 expiration_date = datetime.datetime.now() + datetime.timedelta(days=365)
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="member-9876",
     serial_number="FC-9876543",
@@ -138,34 +138,34 @@ Each pass type has specific field requirements and display properties.
 
 ```python
 # Create a coupon template
-template = pwp.utils.create_template(
+template = wp.utils.create_template(
     name="25% Off Everything",
     organization_id="your-company",
-    pass_type=pwp.PassType.SAMSUNG_COUPON,
+    pass_type=wp.PassType.SAMSUNG_COUPON,
     description="Limited Time Offer",
-    style=pwp.PassStyle(
+    style=wp.PassStyle(
         background_color="#4CAF50",  # Green
         foreground_color="#FFFFFF",  # White
         label_color="#E8F5E9",       # Light green
         logo_text="SALE"
     ),
-    images=pwp.PassImages(
+    images=wp.PassImages(
         logo="images/logo.png",
         icon="images/icon.png"
     )
 )
 
 # Add coupon-specific fields
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "offer", "Offer", "25% Off Everything"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "valid_until", "Valid Until", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "promo_code", "Promo Code", "SAVE25"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "terms", "Terms & Conditions", 
     "One time use. Cannot be combined with other offers."
 )
@@ -175,34 +175,34 @@ pwp.utils.add_field_to_template(
 
 ```python
 # Create an event ticket template
-template = pwp.utils.create_template(
+template = wp.utils.create_template(
     name="Concert Ticket",
     organization_id="your-company",
-    pass_type=pwp.PassType.SAMSUNG_TICKET,
+    pass_type=wp.PassType.SAMSUNG_TICKET,
     description="Rock Concert Ticket",
-    style=pwp.PassStyle(
+    style=wp.PassStyle(
         background_color="#9C27B0",  # Purple
         foreground_color="#FFFFFF",  # White
         label_color="#E1BEE7",       # Light purple
         logo_text="LIVE MUSIC"
     ),
-    images=pwp.PassImages(
+    images=wp.PassImages(
         logo="images/concert_logo.png",
         icon="images/concert_icon.png"
     )
 )
 
 # Add ticket-specific fields
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "header", "event_name", "Event", "Summer Rock Festival"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "date", "Date", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "venue", "Venue", "Central Stadium"
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "auxiliary", "seat", "Seat", "GA-101"
 )
 ```
@@ -213,7 +213,7 @@ To update an existing Samsung Wallet pass:
 
 ```python
 # Create updated pass data
-updated_data = pwp.utils.create_pass_data(
+updated_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="member-9876",
     serial_number="FC-9876543",
@@ -292,19 +292,19 @@ img.save("pass_qr.png")
 Samsung Wallet passes can be visually customized to match your brand:
 
 ```python
-template = pwp.utils.create_template(
+template = wp.utils.create_template(
     name="Fitness Club Membership",
     organization_id="your-company",
-    pass_type=pwp.PassType.SAMSUNG_MEMBERSHIP,
+    pass_type=wp.PassType.SAMSUNG_MEMBERSHIP,
     description="Fitness Club Membership Card",
-    style=pwp.PassStyle(
+    style=wp.PassStyle(
         background_color="#1E3A8A",  # Dark blue background
         foreground_color="#FFFFFF",  # White text
         label_color="#93C5FD",       # Light blue labels
         logo_text="Fitness Club",
         logo_text_color="#FFFFFF"    # White logo text
     ),
-    images=pwp.PassImages(
+    images=wp.PassImages(
         logo="images/logo.png",      # Main logo
         icon="images/icon.png",      # Small icon
         background="images/bg.png",  # Background image
@@ -319,20 +319,20 @@ To associate locations with your pass:
 
 ```python
 # Create locations
-gym_downtown = pwp.utils.create_location(
+gym_downtown = wp.utils.create_location(
     latitude=37.7749,
     longitude=-122.4194,
     relevant_text="Welcome to our Downtown location!"
 )
 
-gym_uptown = pwp.utils.create_location(
+gym_uptown = wp.utils.create_location(
     latitude=37.7833,
     longitude=-122.4167,
     relevant_text="Welcome to our Uptown location!"
 )
 
 # Add locations to the template
-template = pwp.utils.create_template(
+template = wp.utils.create_template(
     # ... other parameters
     locations=[gym_downtown, gym_uptown]
 )

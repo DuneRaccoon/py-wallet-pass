@@ -4,12 +4,12 @@ import datetime
 import os
 from pathlib import Path
 
-import py_wallet_pass as pwp
+import wallet_pass as wp
 
 def create_multi_platform_pass():
     """Create a pass for both Apple and Google platforms."""
     # Configure the SDK with both platforms
-    config = pwp.WalletConfig(
+    config = wp.WalletConfig(
         # Apple configuration
         apple_pass_type_identifier="pass.com.example.coupon",
         apple_team_identifier="ABCDE12345",
@@ -28,14 +28,14 @@ def create_multi_platform_pass():
     )
     
     # Create a pass manager
-    manager = pwp.create_pass_manager(config=config)
+    manager = wp.create_pass_manager(config=config)
     
     # Create separate templates for each platform
-    apple_template = pwp.utils.create_coupon_pass_template(
+    apple_template = wp.utils.create_coupon_pass_template(
         name="25% Off Everything",
         organization_id="example-corp",
         platform="apple",
-        style=pwp.PassStyle(
+        style=wp.PassStyle(
             background_color="#4CAF50",
             foreground_color="#FFFFFF",
             label_color="#E8F5E9",
@@ -43,11 +43,11 @@ def create_multi_platform_pass():
         )
     )
     
-    google_template = pwp.utils.create_coupon_pass_template(
+    google_template = wp.utils.create_coupon_pass_template(
         name="25% Off Everything",
         organization_id="example-corp",
         platform="google",
-        style=pwp.PassStyle(
+        style=wp.PassStyle(
             background_color="#4CAF50",
             foreground_color="#FFFFFF",
             label_color="#E8F5E9",
@@ -59,7 +59,7 @@ def create_multi_platform_pass():
     expiration_date = datetime.datetime.now() + datetime.timedelta(days=30)
     
     # Create Apple pass data
-    apple_pass_data = pwp.utils.create_pass_data(
+    apple_pass_data = wp.utils.create_pass_data(
         template_id=apple_template.id,
         customer_id="customer789",
         barcode_message="COUPON25OFF",
@@ -74,7 +74,7 @@ def create_multi_platform_pass():
     )
     
     # Create Google pass data (same content, different template)
-    google_pass_data = pwp.utils.create_pass_data(
+    google_pass_data = wp.utils.create_pass_data(
         template_id=google_template.id,
         customer_id="customer789",
         barcode_message="COUPON25OFF",

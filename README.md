@@ -100,11 +100,11 @@ The SDK provides a simple, unified API for creating wallet passes across differe
 ### Creating a Multi-platform Pass
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 import datetime
 
 # 1. Configure the SDK
-config = pwp.WalletConfig(
+config = wp.WalletConfig(
     # Apple configuration
     apple_pass_type_identifier="pass.com.example.ticket",
     apple_team_identifier="ABCDE12345",
@@ -122,27 +122,27 @@ config = pwp.WalletConfig(
 )
 
 # 2. Create a pass manager
-manager = pwp.create_pass_manager(config=config)
+manager = wp.create_pass_manager(config=config)
 
 # 3. Create a pass template (this example is for an event ticket)
 event_date = datetime.datetime(2025, 6, 15, 19, 30)
-template = pwp.utils.create_event_pass_template(
+template = wp.utils.create_event_pass_template(
     name="Summer Music Festival",
     organization_id="example-corp",
     platform="both",  # Create for both Apple and Google
-    style=pwp.PassStyle(
+    style=wp.PassStyle(
         background_color="#FF5733",
         foreground_color="#FFFFFF",
         label_color="#FFCCCB"
     ),
-    images=pwp.PassImages(
+    images=wp.PassImages(
         logo="images/logo.png",
         icon="images/icon.png"
     )
 )
 
 # 4. Create pass data
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer123",
     barcode_message="TICKET123456",
@@ -179,10 +179,10 @@ print(f"Google Wallet link: {response['google'].google_pass_url}")
 #### Creating an Apple Wallet Event Ticket
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 
 # Configure the SDK
-config = pwp.WalletConfig(
+config = wp.WalletConfig(
     apple_pass_type_identifier="pass.com.example.eventticket",
     apple_team_identifier="ABCDE12345",
     apple_organization_name="Example Corp",
@@ -194,17 +194,17 @@ config = pwp.WalletConfig(
 )
 
 # Create a pass manager
-manager = pwp.create_pass_manager(config=config)
+manager = wp.create_pass_manager(config=config)
 
 # Create an event ticket template
-template = pwp.utils.create_event_pass_template(
+template = wp.utils.create_event_pass_template(
     name="Summer Music Festival",
     organization_id="example-corp",
     platform="apple"
 )
 
 # Create pass data
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer123",
     barcode_message="TICKET123456",
@@ -230,10 +230,10 @@ with open("concert_ticket.pkpass", "wb") as f:
 ### Creating a Google Wallet Loyalty Card
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 
 # Configure the SDK
-config = pwp.WalletConfig(
+config = wp.WalletConfig(
     google_application_credentials="certificates/google_credentials.json",
     google_issuer_id="3388000000022195611",
     web_service_url="https://example.com/wallet",
@@ -241,17 +241,17 @@ config = pwp.WalletConfig(
 )
 
 # Create a pass manager
-manager = pwp.create_pass_manager(config=config)
+manager = wp.create_pass_manager(config=config)
 
 # Create a loyalty card template
-template = pwp.utils.create_loyalty_pass_template(
+template = wp.utils.create_loyalty_pass_template(
     name="Coffee Rewards",
     organization_id="example-corp",
     platform="google"
 )
 
 # Create pass data
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer456",
     barcode_message="MEMBER456789",
@@ -273,10 +273,10 @@ print(f"Google Pay link: {response['google'].google_pass_url}")
 ### Creating a Samsung Wallet Membership Card
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 
 # Configure the SDK
-config = pwp.WalletConfig(
+config = wp.WalletConfig(
     samsung_issuer_id="samsung-issuer-123",
     samsung_api_key="samsung-api-key-456",
     samsung_service_id="samsung-service-789",
@@ -286,26 +286,26 @@ config = pwp.WalletConfig(
 )
 
 # Create a pass manager
-manager = pwp.create_pass_manager(config=config)
+manager = wp.create_pass_manager(config=config)
 
 # Create a membership card template
-template = pwp.utils.create_template(
+template = wp.utils.create_template(
     name="Fitness Club Membership",
     organization_id="example-fitness",
-    pass_type=pwp.PassType.SAMSUNG_MEMBERSHIP,
+    pass_type=wp.PassType.SAMSUNG_MEMBERSHIP,
     description="Fitness Club Membership Card"
 )
 
 # Add fields to the template
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "header", "member_name", "Member", ""
 )
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "member_id", "Member ID", ""
 )
 
 # Create pass data
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="member-9876",
     barcode_message="MEMBER9876543",
@@ -329,10 +329,10 @@ with open("membership_card.json", "wb") as f:
 By default, the SDK uses the filesystem to store pass data. You can create a custom storage backend by implementing the `StorageBackend` interface:
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 
 # Create a custom storage backend
-class RedisStorage(pwp.StorageBackend):
+class RedisStorage(wp.StorageBackend):
     def __init__(self, redis_client):
         self.client = redis_client
     
@@ -361,8 +361,8 @@ import redis
 redis_client = redis.Redis(host='localhost', port=6379, db=0)
 storage = RedisStorage(redis_client)
 
-config = pwp.WalletConfig(...)
-manager = pwp.create_pass_manager(config=config, storage=storage)
+config = wp.WalletConfig(...)
+manager = wp.create_pass_manager(config=config, storage=storage)
 ```
 
 ## Command Line Interface
@@ -439,10 +439,10 @@ Comprehensive documentation is available in the [docs](docs/) directory.
 The SDK supports custom storage backends by implementing the `StorageBackend` interface. This allows you to store pass data in databases, cloud storage, or other systems:
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 
 # Create a custom Redis storage backend
-class RedisStorage(pwp.StorageBackend):
+class RedisStorage(wp.StorageBackend):
     def __init__(self, redis_client):
         self.client = redis_client
     
@@ -463,7 +463,7 @@ class RedisStorage(pwp.StorageBackend):
 import redis
 redis_client = redis.Redis(host='localhost', port=6379)
 storage = RedisStorage(redis_client)
-manager = pwp.create_pass_manager(config=config, storage=storage)
+manager = wp.create_pass_manager(config=config, storage=storage)
 ```
 
 ## 👨‍💻 Contributing

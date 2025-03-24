@@ -19,7 +19,7 @@ pip install py-wallet-pass[all]
 ### 1. Import the SDK
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 import datetime
 ```
 
@@ -28,7 +28,7 @@ import datetime
 Create a `WalletConfig` object with your platform credentials:
 
 ```python
-config = pwp.WalletConfig(
+config = wp.WalletConfig(
     # Apple configuration (optional if not using Apple Wallet)
     apple_pass_type_identifier="pass.com.example.passtype",
     apple_team_identifier="ABCDE12345",
@@ -57,7 +57,7 @@ config = pwp.WalletConfig(
 The pass manager is your main interface to create and manage passes:
 
 ```python
-manager = pwp.create_pass_manager(config=config)
+manager = wp.create_pass_manager(config=config)
 ```
 
 ## Creating a Pass
@@ -68,17 +68,17 @@ Templates define the structure and appearance of your passes. You can use the he
 
 ```python
 # Create an event ticket template
-template = pwp.utils.create_event_pass_template(
+template = wp.utils.create_event_pass_template(
     name="Summer Music Festival",
     organization_id="example-corp",
     platform="both",  # Create for both Apple and Google
-    style=pwp.PassStyle(
+    style=wp.PassStyle(
         background_color="#FF5733",  # Background color
         foreground_color="#FFFFFF",  # Text color
         label_color="#FFCCCB",       # Label color
         logo_text="Summer Festival"  # Text displayed near the logo
     ),
-    images=pwp.PassImages(
+    images=wp.PassImages(
         logo="images/logo.png",  # Main logo
         icon="images/icon.png"   # Small icon
     )
@@ -100,7 +100,7 @@ Next, create the data for your pass:
 event_date = datetime.datetime(2025, 6, 15, 19, 30)
 
 # Create pass data
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer123",  # Unique identifier for the customer
     barcode_message="TICKET123456",  # Content for the barcode
@@ -162,7 +162,7 @@ You can update an existing pass and notify users of changes:
 
 ```python
 # Create updated pass data
-updated_data = pwp.utils.create_pass_data(
+updated_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer123",
     serial_number=response['apple'].serial_number,  # Use the same serial number

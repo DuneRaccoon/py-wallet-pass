@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from py_wallet_pass.config import WalletConfig
-from py_wallet_pass.storage import MemoryStorage
-from py_wallet_pass.schema.core import PassType, PassTemplate, PassStructure, PassStyle, PassImages
+from wallet_pass.config import WalletConfig
+from wallet_pass.storage import MemoryStorage
+from wallet_pass.schema.core import PassType, PassTemplate, PassStructure, PassStyle, PassImages
 
 
 @pytest.fixture
@@ -33,7 +33,7 @@ def config():
         samsung_issuer_id="samsung-issuer-123",
         samsung_api_key="samsung-api-key",
         samsung_service_id="samsung-service-id",
-        storage_path="/tmp/py_wallet_pass_test",
+        storage_path="/tmp/wallet_pass_test",
         web_service_url="https://example.com/wallet"
     )
 

@@ -41,11 +41,11 @@ Before you begin, you'll need:
 Here's how to create a simple Google Wallet pass:
 
 ```python
-import py_wallet_pass as pwp
+import wallet_pass as wp
 import datetime
 
 # Configure the SDK
-config = pwp.WalletConfig(
+config = wp.WalletConfig(
     google_application_credentials="path/to/service-account-key.json",
     google_issuer_id="your-issuer-id-from-google-wallet-console",
     web_service_url="https://example.com/wallet",  # Optional
@@ -53,32 +53,32 @@ config = pwp.WalletConfig(
 )
 
 # Create a pass manager
-manager = pwp.create_pass_manager(config=config)
+manager = wp.create_pass_manager(config=config)
 
 # Create a template (this example is for a loyalty card)
-template = pwp.utils.create_loyalty_pass_template(
+template = wp.utils.create_loyalty_pass_template(
     name="Coffee Rewards",
     organization_id="your-company",
     platform="google",
-    style=pwp.PassStyle(
+    style=wp.PassStyle(
         background_color="#8B4513",  # Brown background
         foreground_color="#FFFFFF",  # White text
         label_color="#D2B48C",       # Tan labels
         logo_text="Coffee Rewards"
     ),
-    images=pwp.PassImages(
+    images=wp.PassImages(
         logo="images/logo.png",
         icon="images/icon.png"
     )
 )
 
 # Add additional fields to the template if needed
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "rewards", "Rewards", "10 points = Free coffee"
 )
 
 # Create pass data
-pass_data = pwp.utils.create_pass_data(
+pass_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer456",
     barcode_message="MEMBER456789",
@@ -126,16 +126,16 @@ Each pass type has specific fields and formatting. The SDK provides helper funct
 
 ```python
 # For loyalty cards
-template = pwp.utils.create_loyalty_pass_template(...)
+template = wp.utils.create_loyalty_pass_template(...)
 
 # For offers/coupons
-template = pwp.utils.create_coupon_pass_template(...)
+template = wp.utils.create_coupon_pass_template(...)
 
 # For event tickets
-template = pwp.utils.create_event_pass_template(...)
+template = wp.utils.create_event_pass_template(...)
 
 # For boarding passes
-template = pwp.utils.create_boarding_pass_template(...)
+template = wp.utils.create_boarding_pass_template(...)
 ```
 
 ## Pass Distribution
@@ -176,7 +176,7 @@ To update an existing Google Wallet pass:
 
 ```python
 # Create updated pass data
-updated_data = pwp.utils.create_pass_data(
+updated_data = wp.utils.create_pass_data(
     template_id=template.id,
     customer_id="customer456",
     serial_number=response['google'].serial_number,  # Use the same serial number
@@ -218,17 +218,17 @@ Google Wallet handles push notifications automatically when you update a pass. T
 You can customize the appearance of your Google Wallet pass:
 
 ```python
-template = pwp.utils.create_loyalty_pass_template(
+template = wp.utils.create_loyalty_pass_template(
     name="Coffee Rewards",
     organization_id="your-company",
     platform="google",
-    style=pwp.PassStyle(
+    style=wp.PassStyle(
         background_color="#5D4037",  # Dark brown background
         foreground_color="#FFFFFF",  # White text
         label_color="#D7CCC8",       # Light tan labels
         logo_text="Premium Coffee Club"
     ),
-    images=pwp.PassImages(
+    images=wp.PassImages(
         logo="images/logo.png",     # Main logo
         icon="images/icon.png",     # Small icon
         thumbnail="images/thumb.png"  # Optional thumbnail image
@@ -242,19 +242,19 @@ You can add custom fields to your pass template:
 
 ```python
 # Add fields to different sections
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "header", "tier", "Tier", "Premium"
 )
 
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "primary", "points_balance", "Points", "0"
 )
 
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "secondary", "expiration", "Expires", "Never"
 )
 
-pwp.utils.add_field_to_template(
+wp.utils.add_field_to_template(
     template, "back", "terms", "Terms & Conditions", 
     "Points never expire. Rewards subject to availability."
 )
@@ -266,20 +266,20 @@ You can add location information to trigger notifications when users are near sp
 
 ```python
 # Create locations
-coffee_shop_downtown = pwp.utils.create_location(
+coffee_shop_downtown = wp.utils.create_location(
     latitude=37.7749,
     longitude=-122.4194,
     relevant_text="Welcome to our Downtown location! Show your pass for a free cookie."
 )
 
-coffee_shop_uptown = pwp.utils.create_location(
+coffee_shop_uptown = wp.utils.create_location(
     latitude=37.7833,
     longitude=-122.4167,
     relevant_text="Visit our Uptown location and earn double points today!"
 )
 
 # Add locations to the template
-template = pwp.utils.create_loyalty_pass_template(
+template = wp.utils.create_loyalty_pass_template(
     # ... other parameters
     locations=[coffee_shop_downtown, coffee_shop_uptown]
 )

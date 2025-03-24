@@ -4,13 +4,13 @@ import datetime
 import os
 from pathlib import Path
 
-import py_wallet_pass as pwp
+import wallet_pass as wp
 
 
 def create_apple_event_ticket():
     """Create an Apple Wallet event ticket."""
     # Configure the SDK
-    config = pwp.WalletConfig(
+    config = wp.WalletConfig(
         apple_pass_type_identifier="pass.com.example.eventticket",
         apple_team_identifier="ABCDE12345",
         apple_organization_name="Example Corp",
@@ -22,20 +22,20 @@ def create_apple_event_ticket():
     )
     
     # Create a pass manager
-    manager = pwp.create_pass_manager(config=config)
+    manager = wp.create_pass_manager(config=config)
     
     # Create an event ticket template
-    template = pwp.utils.create_event_pass_template(
+    template = wp.utils.create_event_pass_template(
         name="Summer Music Festival",
         organization_id="example-corp",
         platform="apple",
-        style=pwp.PassStyle(
+        style=wp.PassStyle(
             background_color="#FF5733",
             foreground_color="#FFFFFF",
             label_color="#FFCCCB",
             logo_text="Summer Festival"
         ),
-        images=pwp.PassImages(
+        images=wp.PassImages(
             logo="images/logo.png",
             icon="images/icon.png",
             strip="images/strip.png"
@@ -43,13 +43,13 @@ def create_apple_event_ticket():
     )
     
     # Add some custom fields
-    pwp.utils.add_field_to_template(
+    wp.utils.add_field_to_template(
         template, "auxiliary", "stage", "Stage", "Main Stage"
     )
     
     # Create pass data
     concert_date = datetime.datetime(2025, 6, 1, 19, 0)
-    pass_data = pwp.utils.create_pass_data(
+    pass_data = wp.utils.create_pass_data(
         template_id=template.id,
         customer_id="customer123",
         barcode_message="TICKET123456",
@@ -84,7 +84,7 @@ def create_apple_event_ticket():
 def update_pass_example(pass_id: str):
     """Example of updating an existing pass."""
     # Configure the SDK
-    config = pwp.WalletConfig(
+    config = wp.WalletConfig(
         apple_pass_type_identifier="pass.com.example.eventticket",
         apple_team_identifier="ABCDE12345",
         apple_organization_name="Example Corp",
@@ -96,14 +96,14 @@ def update_pass_example(pass_id: str):
     )
     
     # Create a pass manager
-    manager = pwp.create_pass_manager(config=config)
+    manager = wp.create_pass_manager(config=config)
     
     # Get the existing pass (this would typically be stored in your database)
     response = manager.apple_pass.get_pass(pass_id)
     
     # Retrieve the template (in a real app, you'd store this)
     # For this example, we'll create a new template with the same ID
-    template = pwp.utils.create_event_pass_template(
+    template = wp.utils.create_event_pass_template(
         name="Summer Music Festival",
         organization_id="example-corp",
         platform="apple"
@@ -112,7 +112,7 @@ def update_pass_example(pass_id: str):
     
     # Create updated pass data with new values
     concert_date = datetime.datetime(2025, 6, 2, 20, 0)  # Changed date/time
-    pass_data = pwp.utils.create_pass_data(
+    pass_data = wp.utils.create_pass_data(
         template_id=template.id,
         customer_id=response.customer_id,
         serial_number=response.serial_number,

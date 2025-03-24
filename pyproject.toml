@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "py-wallet-pass"
-version = "0.1.1"
+version = "0.1.2"
 description = "SDK for easily creating/managing Apple and Google wallet passes."
 authors = ["DuneRaccoon <benjamincsherro@hotmail.com>"]
 readme = "README.md"
 license = "CC BY-NC 4.0"
-packages = [{ include = "py_wallet_pass" }]
+packages = [{ include = "wallet_pass" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -22,14 +22,14 @@ pytest = "^7.0.0"
 pytest-cov = "^4.1.0"
 
 [tool.poetry.scripts]
-wallet-pass = "py_wallet_pass.cli:main"
+wallet-pass = "wallet_pass.cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "--cov=py_wallet_pass"
+addopts = "--cov=wallet_pass"
 
 [build-system]
 requires = ["poetry-core"]

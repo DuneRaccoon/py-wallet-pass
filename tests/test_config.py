@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from py_wallet_pass.config import WalletConfig
+from wallet_pass.config import WalletConfig
 
 
 def test_wallet_config_init():

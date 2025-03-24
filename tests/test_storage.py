@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from py_wallet_pass.storage import FileSystemStorage, MemoryStorage
+from wallet_pass.storage import FileSystemStorage, MemoryStorage
 
 
 def test_memory_storage():

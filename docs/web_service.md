@@ -39,7 +39,7 @@ Here's a basic implementation using Flask:
 
 ```python
 from flask import Flask, request, jsonify, abort, send_file
-import py_wallet_pass as pwp
+import wallet_pass as wp
 import json
 import os
 from pathlib import Path
@@ -48,7 +48,7 @@ import datetime
 app = Flask(__name__)
 
 # Initialize the Pass Manager (done once at startup)
-config = pwp.WalletConfig(
+config = wp.WalletConfig(
     apple_pass_type_identifier="pass.com.example.passtype",
     apple_team_identifier="ABCDE12345",
     apple_organization_name="Your Company",
@@ -63,7 +63,7 @@ config = pwp.WalletConfig(
     web_service_url="https://example.com/wallet",
     storage_path="passes"
 )
-manager = pwp.create_pass_manager(config=config)
+manager = wp.create_pass_manager(config=config)
 
 # Database for device registrations (in a real app, use a proper database)
 REGISTRATIONS_DIR = Path("registrations")

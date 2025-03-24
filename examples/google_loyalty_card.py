@@ -4,13 +4,13 @@ import datetime
 import os
 from pathlib import Path
 
-import py_wallet_pass as pwp
+import wallet_pass as wp
 
 
 def create_google_loyalty_card():
     """Create a Google Wallet loyalty card."""
     # Configure the SDK
-    config = pwp.WalletConfig(
+    config = wp.WalletConfig(
         google_application_credentials="certificates/google_credentials.json",
         google_issuer_id="3388000000022195611",
         web_service_url="https://example.com/wallet",
@@ -18,33 +18,33 @@ def create_google_loyalty_card():
     )
     
     # Create a pass manager
-    manager = pwp.create_pass_manager(config=config)
+    manager = wp.create_pass_manager(config=config)
     
     # Create a loyalty card template
-    template = pwp.utils.create_loyalty_pass_template(
+    template = wp.utils.create_loyalty_pass_template(
         name="Coffee Rewards",
         organization_id="example-corp",
         platform="google",
-        style=pwp.PassStyle(
+        style=wp.PassStyle(
             background_color="#8B4513",
             foreground_color="#FFFFFF",
             label_color="#D2B48C",
             logo_text="Coffee Rewards"
         ),
-        images=pwp.PassImages(
+        images=wp.PassImages(
             logo="images/logo.png",
             icon="images/icon.png"
         )
     )
     
     # Add some custom fields
-    pwp.utils.add_field_to_template(
+    wp.utils.add_field_to_template(
         template, "back", "rewards", "Rewards", "10 points = Free coffee"
     )
     
     # Create pass data
     member_since = datetime.datetime(2023, 1, 15)
-    pass_data = pwp.utils.create_pass_data(
+    pass_data = wp.utils.create_pass_data(
         template_id=template.id,
         customer_id="customer456",
         barcode_message="MEMBER456789",

@@ -462,7 +462,7 @@ pip list | grep py-wallet-pass
 echo $PATH
 
 # You can run it with the full path
-python -m py_wallet_pass.cli --help
+python -m wallet_pass.cli --help
 ```
 
 #### Configuration Errors
@@ -502,7 +502,7 @@ To save logs to a file:
 
 ```bash
 # Set log directory
-export PY_WALLET_PASS_LOG_DIR=./logs
+export WALLET_PASS_LOG_DIR=./logs
 
 # Run the command
 wallet-pass create-pass --config wallet_config.json ...
