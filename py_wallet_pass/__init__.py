@@ -32,7 +32,7 @@ from .schema.core import (
     PassData, 
     PassResponse
 )
-from .providers.base import PassManager
+from .providers.manager import PassManager
 from .utils import (
     create_template,
     add_field_to_template,

@@ -1,4 +1,5 @@
-from .base import BasePass, PassManager
+from .base import BasePass
+from .manager import PassManager
 
 try:
     from .apple_pass import ApplePass
