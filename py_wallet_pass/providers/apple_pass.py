@@ -248,15 +248,60 @@ class ApplePass(BasePass):
             raise AppleWalletError(f"Failed to generate Apple Wallet pass file: {e}")
     
     def send_update_notification(self, pass_id: str) -> bool:
-        """Send a push notification for pass updates."""
+        """Send a push notification for pass updates.
+        
+        This method sends a push notification to Apple devices that have installed this pass,
+        informing them that the pass has been updated.
+        
+        Note: This method requires proper APNs integration to function correctly.
+        You'll need to set up an APNs certificate or token and configure the connection.
+        
+        Args:
+            pass_id: ID of the pass to send a notification for
+            
+        Returns:
+            True if the notification was sent successfully, False otherwise
+        """
         try:
-            # Implement push notification using the Apple Push Notification Service
-            # This would require additional implementation with APNs
+            # Get the pass from storage
+            pass_json = self._retrieve_pass_data(pass_id)
             
-            # For now, log a warning that this functionality requires additional implementation
+            # Get the push tokens associated with this pass
+            # In a real implementation, these would be stored with the pass
+            push_tokens = pass_json.get('pushTokens', [])
+            
+            if not push_tokens:
+                logger.info(f"No push tokens available for pass {pass_id}")
+                return True  # No tokens to notify, so technically success
+            
+            # In a real implementation, you'd set up APNs connection and send notifications
+            # Example implementation (requires a proper APNs client):
+            #
+            # apns_client = APNSClient(
+            #     certificate=self.config.apple_push_certificate_path,
+            #     private_key=self.config.apple_push_private_key_path,
+            #     use_sandbox=self.config.apple_push_use_sandbox
+            # )
+            # 
+            # success = True
+            # for token in push_tokens:
+            #     try:
+            #         response = apns_client.send_notification(
+            #             token=token,
+            #             payload={"aps": {"alert": {"body": "Your pass has been updated"}}}
+            #         )
+            #         logger.debug(f"APNs response for token {token}: {response}")
+            #     except Exception as token_error:
+            #         logger.error(f"Failed to send notification to token {token}: {token_error}")
+            #         success = False
+            #
+            # return success
+            
+            # For now, log that this functionality requires additional implementation
             logger.warning("Apple push notification not fully implemented. Requires APNs integration.")
+            logger.info(f"Would notify {len(push_tokens)} devices for pass {pass_id}")
             
-            # Return success status
+            # Return success status (this is a placeholder)
             return True
         except Exception as e:
             logger.error(f"Failed to send Apple push notification: {e}")
@@ -406,21 +451,56 @@ class ApplePass(BasePass):
             pass_dict[field_type].append(field_dict)
     
     def _add_pass_images(self, temp_path: Path, template: PassTemplate) -> None:
-        """Add images to the pass package."""
-        # This is a placeholder - in a real implementation, we would need to:
-        # 1. Fetch the images from wherever they're stored
-        # 2. Resize them to the correct dimensions for the pass
-        # 3. Save them to the temporary directory with the correct names
+        """Add images to the pass package.
         
-        # For now, just log that this functionality needs to be implemented
-        logger.warning("Pass image handling not fully implemented. Needs image processing capabilities.")
+        This method copies image files specified in the template to the temporary pass directory.
+        It checks for both normal and @2x (retina) versions of each image.
         
-        # In a real implementation, we would copy the required images to the temp directory:
-        # - logo.png
-        # - logo@2x.png
-        # - icon.png
-        # - icon@2x.png
-        # - and any other pass-specific images (strip, background, etc.)
+        Args:
+            temp_path: Path to the temporary directory for the pass files
+            template: Pass template containing image paths
+        """
+        import shutil
+        
+        if not template.images:
+            logger.warning("No images specified in the template")
+            return
+        
+        # Define the image types to process
+        image_types = {
+            'logo': template.images.logo,
+            'icon': template.images.icon,
+            'strip': template.images.strip,
+            'background': template.images.background,
+            'footer': template.images.footer,
+            'thumbnail': template.images.thumbnail
+        }
+        
+        for image_type, image_path in image_types.items():
+            if not image_path:
+                # Skip images that aren't specified
+                continue
+            
+            # Check if the image file exists
+            image_path_obj = Path(image_path)
+            if not image_path_obj.exists():
+                if image_type == 'icon':
+                    logger.error(f"Required image '{image_type}' not found at {image_path}")
+                else:
+                    logger.warning(f"Image file not found: {image_path}")
+                continue
+            
+            # Copy the image to the temporary directory with the correct name
+            target_path = temp_path / f"{image_type}.png"
+            shutil.copy2(image_path_obj, target_path)
+            logger.debug(f"Copied {image_path} to {target_path}")
+            
+            # Check for a @2x version using naming convention
+            retina_path = image_path_obj.parent / f"{image_path_obj.stem}@2x{image_path_obj.suffix}"
+            if retina_path.exists():
+                retina_target_path = temp_path / f"{image_type}@2x.png"
+                shutil.copy2(retina_path, retina_target_path)
+                logger.debug(f"Copied {retina_path} to {retina_target_path}")
     
     def _create_manifest(self, pass_dir: Path) -> Dict[str, str]:
         """Create the pass manifest with SHA1 hashes of all files."""

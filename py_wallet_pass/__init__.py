@@ -7,6 +7,8 @@ for both Apple Wallet and Google Wallet platforms.
 
 __version__ = "0.1.0"
 
+from pathlib import Path
+
 from .config import WalletConfig
 from .exceptions import (
     PyWalletPassError, 
@@ -47,21 +49,63 @@ from .utils import (
 from .storage import StorageBackend, FileSystemStorage, MemoryStorage, create_storage_backend
 
 # Convenience function to quickly set up a pass manager
-def create_pass_manager(config_dict=None, config=None, storage=None):
+def create_pass_manager(config_dict=None, config=None, storage=None, storage_path=None):
     """
     Create a PassManager instance with the given configuration.
     
+    This function is the main entry point for creating a PassManager that can handle 
+    passes for multiple wallet platforms. It automatically initializes the appropriate
+    pass providers based on the configuration provided.
+    
     Args:
         config_dict: Dictionary containing configuration values
-        config: WalletConfig instance
-        storage: StorageBackend instance
+        config: WalletConfig instance (takes precedence over config_dict)
+        storage: StorageBackend instance (optional custom storage backend)
+        storage_path: Path for file storage (used only if storage is None)
         
     Returns:
-        PassManager instance
+        PassManager instance configured with the appropriate pass providers
+        
+    Examples:
+        >>> # Create with config dictionary
+        >>> manager = create_pass_manager(config_dict={
+        ...     'apple_pass_type_identifier': 'pass.com.example.eventticket',
+        ...     'apple_team_identifier': 'ABCDE12345',
+        ...     'apple_certificate_path': 'path/to/certificate.pem'
+        ... })
+        >>> 
+        >>> # Create with WalletConfig instance
+        >>> config = WalletConfig(
+        ...     apple_pass_type_identifier='pass.com.example.coupon',
+        ...     apple_team_identifier='ABCDE12345'
+        ... )
+        >>> manager = create_pass_manager(config=config)
     """
+    # Create config if none provided
     if config is None:
         if config_dict is None:
             config_dict = {}
         config = WalletConfig.from_dict(config_dict)
     
-    return PassManager(config, storage=storage)
+    # Override storage path if provided
+    if storage_path is not None:
+        config.storage_path = Path(storage_path)
+    
+    # Create the PassManager
+    manager = PassManager(config, storage=storage)
+    
+    # Check if any pass providers were initialized
+    has_providers = any([
+        manager.apple_pass is not None,
+        manager.google_pass is not None,
+        manager.samsung_pass is not None
+    ])
+    
+    if not has_providers:
+        import logging
+        logging.warning(
+            "No pass providers were initialized. Check your configuration for at least one "
+            "platform (Apple, Google, or Samsung) and ensure required dependencies are installed."
+        )
+    
+    return manager

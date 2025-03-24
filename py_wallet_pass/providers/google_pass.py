@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from ..config import WalletConfig
 from ..exceptions import GoogleWalletError, PassCreationError
-from ..schema.core import PassData, PassResponse, PassTemplate, PassType, Barcode
+from ..schema.core import PassData, PassResponse, PassTemplate, PassType, Barcode, PassField
 from ..storage import StorageBackend, FileSystemStorage
 from .base import BasePass
 
@@ -47,15 +47,29 @@ class GooglePass(BasePass):
         self._init_client()
     
     def _validate_config(self) -> None:
-        """Validate the configuration for Google Wallet."""
-        if not self.config.google_application_credentials:
-            raise GoogleWalletError("Missing Google application credentials")
+        """Validate the configuration for Google Wallet.
         
-        if not self.config.google_application_credentials.exists():
-            raise GoogleWalletError(f"Google credentials file not found: {self.config.google_application_credentials}")
+        Ensures all required Google Wallet configuration parameters are present
+        and valid. Raises GoogleWalletError if configuration is invalid.
+        """
+        missing_fields = []
+        
+        if not self.config.google_application_credentials:
+            missing_fields.append("google_application_credentials")
+        elif not self.config.google_application_credentials.exists():
+            raise GoogleWalletError(
+                f"Google credentials file not found: {self.config.google_application_credentials}. "
+                f"Please provide a valid service account credentials JSON file."
+            )
         
         if not self.config.google_issuer_id:
-            raise GoogleWalletError("Missing Google issuer ID")
+            missing_fields.append("google_issuer_id")
+        
+        if missing_fields:
+            raise GoogleWalletError(
+                f"Missing required Google Wallet configuration: {', '.join(missing_fields)}. "
+                f"Please provide values for all required fields."
+            )
     
     def _init_client(self) -> None:
         """Initialize the Google Wallet API client."""
@@ -234,7 +248,18 @@ class GooglePass(BasePass):
             return False
     
     def _generate_pass_payload(self, pass_data: PassData, template: PassTemplate) -> Dict[str, Any]:
-        """Generate the pass payload for Google Wallet."""
+        """Generate the pass payload for Google Wallet.
+        
+        Creates a properly formatted JSON payload for the Google Wallet API based on
+        the provided pass data and template.
+        
+        Args:
+            pass_data: The pass data containing values for the pass fields
+            template: The pass template defining the structure and style
+            
+        Returns:
+            A dictionary containing the Google Wallet JSON payload
+        """
         # Determine the Google Wallet object type
         object_type = self._get_object_type(template.pass_type)
         
@@ -333,51 +358,56 @@ class GooglePass(BasePass):
         }
     
     def _add_fields_to_pass(self, payload: Dict[str, Any], structure: Any, pass_data: PassData) -> None:
-        """Add fields from the template structure to the pass payload."""
-        # Process header fields
-        for field in structure.header_fields:
-            value = pass_data.field_values.get(field.key, field.value)
-            payload["textModulesData"].append({
-                "id": field.key,
-                "header": field.label,
-                "body": str(value)
-            })
+        """Add fields from the template structure to the pass payload.
         
-        # Process primary fields
-        for field in structure.primary_fields:
-            value = pass_data.field_values.get(field.key, field.value)
-            payload["textModulesData"].append({
-                "id": field.key,
-                "header": field.label,
-                "body": str(value)
-            })
+        Takes fields from different sections of the pass structure and adds them
+        to the appropriate section in the Google Wallet pass payload.
         
-        # Process secondary fields
-        for field in structure.secondary_fields:
-            value = pass_data.field_values.get(field.key, field.value)
-            payload["textModulesData"].append({
-                "id": field.key,
-                "header": field.label,
-                "body": str(value)
-            })
+        Args:
+            payload: The Google Wallet JSON payload to update
+            structure: The pass structure containing field definitions
+            pass_data: The pass data containing values for the fields
+        """
+        # Define field sections to process
+        field_sections = {
+            "header": structure.header_fields,
+            "primary": structure.primary_fields,
+            "secondary": structure.secondary_fields,
+            "auxiliary": structure.auxiliary_fields,
+            "back": structure.back_fields
+        }
         
-        # Process auxiliary fields
-        for field in structure.auxiliary_fields:
-            value = pass_data.field_values.get(field.key, field.value)
-            payload["textModulesData"].append({
-                "id": field.key,
-                "header": field.label,
-                "body": str(value)
-            })
+        # Process all field sections
+        for section_name, fields in field_sections.items():
+            self._add_section_fields_to_payload(payload, fields, pass_data, section_name)
+    
+    def _add_section_fields_to_payload(
+        self, 
+        payload: Dict[str, Any], 
+        fields: List[PassField], 
+        pass_data: PassData,
+        section_name: str
+    ) -> None:
+        """Add fields from a specific section to the pass payload.
         
-        # Process back fields
-        for field in structure.back_fields:
+        Args:
+            payload: The Google Wallet JSON payload to update
+            fields: List of fields in this section
+            pass_data: The pass data containing values for the fields
+            section_name: Name of the section (for logging purposes)
+        """
+        for field in fields:
+            # Get value from pass_data or use default from template
             value = pass_data.field_values.get(field.key, field.value)
+            
+            # Add the field to the text modules section
             payload["textModulesData"].append({
                 "id": field.key,
                 "header": field.label,
                 "body": str(value)
             })
+            
+            logger.debug(f"Added {section_name} field {field.key} with value {value}")
     
     def _ensure_class_exists(self, class_id: str, template: PassTemplate) -> None:
         """Ensure that the Google Wallet class exists."""
