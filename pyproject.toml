@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "py-wallet-pass"
-version = "0.1.0"
+version = "0.1.1"
 description = "SDK for easily creating/managing Apple and Google wallet passes."
 authors = ["DuneRaccoon <benjamincsherro@hotmail.com>"]
 readme = "README.md"
