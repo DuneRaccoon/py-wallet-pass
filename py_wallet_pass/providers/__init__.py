@@ -7,7 +7,7 @@ except ImportError:
     pass
 
 try:
-    from .samsung import SamsungPass
+    from .samsung_pass import SamsungPass
 except ImportError:
     pass
 

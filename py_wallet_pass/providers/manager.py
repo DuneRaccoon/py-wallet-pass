@@ -12,7 +12,7 @@ from ..storage import StorageBackend, FileSystemStorage
 
 from .apple_pass import ApplePass
 from .google_pass import GooglePass
-from .samsung import SamsungPass
+from .samsung_pass import SamsungPass
 
 logger = logging.getLogger(__name__)
 
