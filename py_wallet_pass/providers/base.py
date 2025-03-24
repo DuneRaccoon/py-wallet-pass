@@ -9,6 +9,9 @@ from ..config import WalletConfig
 from ..exceptions import PassCreationError
 from ..schema.core import PassData, PassResponse, PassTemplate, PassType
 
+from .apple_pass import ApplePass
+from .google_pass import GooglePass
+
 logger = logging.getLogger(__name__)
 
 
@@ -67,14 +70,12 @@ class PassManager:
         # Initialize pass providers if not provided
         if not self.apple_pass and self._has_apple_config():
             try:
-                from .apple_pass import ApplePass
                 self.apple_pass = ApplePass(config)
             except Exception as e:
                 logger.warning(f"Failed to initialize Apple Pass provider: {e}")
         
         if not self.google_pass and self._has_google_config():
             try:
-                from .google_pass import GooglePass
                 self.google_pass = GooglePass(config)
             except Exception as e:
                 logger.warning(f"Failed to initialize Google Pass provider: {e}")

@@ -8,6 +8,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 pydantic = "^2.10.6"
+google-auth = "^2.38.0"
+google-api-python-client = "^2.165.0"
+pyopenssl = "^25.0.0"
 
 
 [build-system]
