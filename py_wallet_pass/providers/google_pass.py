@@ -1,6 +1,7 @@
 """Google Wallet pass implementation."""
 
 import json
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
